@@ -1,9 +1,9 @@
 import { ButtonLink } from "@/components/ui/button";
 import { TrialCard } from "@/components/ui/cards";
-import { isRecruiting, mockAnnouncements } from "@/lib/mock";
+import { isRecruiting, listAnnouncements } from "@/lib/announcements";
 
-export default function HomePage() {
-  const recruiting = mockAnnouncements.filter(isRecruiting);
+export default async function HomePage() {
+  const recruiting = (await listAnnouncements()).filter(isRecruiting);
   return (
     <div className="grid gap-8">
       <section className="grid gap-3 py-6 text-center">
