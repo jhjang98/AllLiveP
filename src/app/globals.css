@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+/* 디자인 토큰 — docs/design.md 확정값 (시안 v1 승인 2026-09-28) */
+@theme {
+  --color-primary: #15579e;
+  --color-primary-deep: #0f3d70;
+  --color-primary-soft: #e8f0fa;
+  --color-accent: #c9501f;
+  --color-accent-soft: #fbeee7;
+  --color-ink: #1c2b3a;
+  --color-muted: #5a6b7e;
+  --color-bg: #f2f5f9;
+  --color-surface: #ffffff;
+  --color-line: #dce3eb;
+  --color-ok: #1d8a4e;
+  --color-ok-soft: #e6f4ec;
+  --color-warn: #b97d10;
+  --color-warn-soft: #fdf3e0;
+  --color-err: #c6373c;
+
+  --font-sans: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif;
+
+  --radius-card: 12px;
+  --radius-btn: 10px;
+}
+
+/* 접근성 우선: 본문 기본 17px, 최소 15px (design.md) */
+html {
+  font-size: 17px;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
