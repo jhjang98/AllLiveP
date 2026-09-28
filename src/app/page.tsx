@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ButtonLink } from "@/components/ui/button";
 import { TrialCard } from "@/components/ui/cards";
 import { isRecruiting, mockAnnouncements } from "@/lib/mock";
 
@@ -11,12 +11,9 @@ export default function HomePage() {
           건강한 참여, 신뢰할 수 있는 임상시험
         </h1>
         <p className="text-muted">검수를 거친 모집 공고만 게시됩니다.</p>
-        <Link
-          href="/trials"
-          className="mx-auto mt-2 inline-flex min-h-11 items-center rounded-(--radius-btn) bg-primary px-8 py-3 text-[17px] font-bold text-white hover:bg-primary-deep"
-        >
+        <ButtonLink href="/trials" className="mx-auto mt-2">
           공고 찾아보기
-        </Link>
+        </ButtonLink>
       </section>
 
       <section className="grid gap-4">
