@@ -1,11 +1,11 @@
-// 기준 페이지: 상세 (docs/design.md — 요약 카드 상단 + 본문 + 하단 고정 CTA)
+// 기준 페이지: 상세 — Supabase 실데이터
 
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { SummaryCard } from "@/components/ui/cards";
 import { StickyCTA } from "@/components/ui/form";
-import { dDay, getMockAnnouncement, isRecruiting } from "@/lib/mock";
+import { dDay, getAnnouncement, isRecruiting } from "@/lib/announcements";
 
 export default async function TrialDetailPage({
   params,
@@ -13,7 +13,7 @@ export default async function TrialDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const trial = getMockAnnouncement(Number(id));
+  const trial = await getAnnouncement(Number(id));
   if (!trial) notFound();
 
   const recruiting = isRecruiting(trial);
@@ -29,7 +29,11 @@ export default async function TrialDetailPage({
       <SummaryCard trial={trial} />
       <section className="grid gap-2">
         <h2 className="text-base font-bold text-muted">시험 소개</h2>
-        <p className="text-base leading-relaxed">{trial.body}</p>
+        {/* 본문 HTML은 공고 등록 API(PR #6)에서 sanitize 후 저장한다 — 렌더 전 신뢰 가능 상태 유지가 전제 */}
+        <div
+          className="text-base leading-relaxed [&_p]:mb-3"
+          dangerouslySetInnerHTML={{ __html: trial.body }}
+        />
       </section>
       <StickyCTA>
         {recruiting ? (

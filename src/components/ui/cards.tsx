@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { Badge } from "./badge";
 import {
-  type Announcement,
+  type AnnouncementView,
   dDay,
   genderLabel,
   isRecruiting,
   targetLabel,
-} from "@/lib/mock";
+} from "@/lib/announcement-view";
 
-export function TrialCard({ trial }: { trial: Announcement }) {
+export function TrialCard({ trial }: { trial: AnnouncementView }) {
   const recruiting = isRecruiting(trial);
   return (
     <Link
@@ -24,9 +24,7 @@ export function TrialCard({ trial }: { trial: Announcement }) {
       <h3 className="text-[17px] leading-relaxed font-bold text-balance">{trial.title}</h3>
       <div className="flex flex-wrap gap-x-3.5 gap-y-1 text-sm text-muted">
         <span>{trial.institutionName}</span>
-        <span>
-          {trial.city} {trial.district}
-        </span>
+        <span>{trial.institutionAddress}</span>
         <span>
           만 {trial.ageMin}~{trial.ageMax}세 · {genderLabel[trial.gender]}
         </span>
@@ -35,12 +33,12 @@ export function TrialCard({ trial }: { trial: Announcement }) {
   );
 }
 
-export function SummaryCard({ trial }: { trial: Announcement }) {
+export function SummaryCard({ trial }: { trial: AnnouncementView }) {
   const rows: Array<[string, string]> = [
     ["대상", `만 ${trial.ageMin}~${trial.ageMax}세 · ${genderLabel[trial.gender]} · ${targetLabel[trial.target]}`],
     ["모집기간", `${trial.recruitStart} ~ ${trial.recruitEnd}`],
-    ["참여기간", trial.participationText],
-    ["실시기관", `${trial.institutionName} (${trial.city} ${trial.district})`],
+    ["참여기간", trial.participationText ?? "공고 본문 참조"],
+    ["실시기관", `${trial.institutionName} (${trial.institutionAddress})`],
   ];
   if (trial.targetCount) rows.push(["모집인원", `${trial.targetCount}명`]);
   if (trial.sponsorName) rows.push(["의뢰기관", trial.sponsorName]);
