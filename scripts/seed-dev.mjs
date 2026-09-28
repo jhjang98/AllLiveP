@@ -49,7 +49,9 @@ async function ensureInstitution(ownerId) {
 }
 
 async function codeId(name) {
-  const { data } = await db.from("codes").select("id").eq("name", name).single();
+  const { data, error } = await db.from("codes").select("id").eq("name", name).maybeSingle();
+  if (error) throw new Error(`코드 조회 실패(${name}): ${error.message}`);
+  if (!data) throw new Error(`코드가 없습니다: "${name}" — supabase/seed.sql을 먼저 적용하세요`);
   return data.id;
 }
 
