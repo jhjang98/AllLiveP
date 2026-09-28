@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -20,21 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen">
-        <header className="border-b border-line bg-surface">
-          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-            <Link href="/" className="text-xl font-black text-primary-deep">
-              AllLive<span className="text-accent">P</span>
-            </Link>
-            <nav className="flex items-center gap-5 text-[15px] text-muted">
-              <Link href="/trials" className="hover:text-ink">
-                공고 찾기
-              </Link>
-              <span aria-disabled className="cursor-not-allowed opacity-50">
-                로그인
-              </span>
-            </nav>
-          </div>
-        </header>
+        <SiteHeader />
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
         <footer className="mt-16 border-t border-line py-8 text-center text-sm text-muted">
           AllLiveP · 임상시험 대상자 모집 플랫폼
