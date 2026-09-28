@@ -1,0 +1,166 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AllLiveP API",
+    "version": "0.1.0-draft",
+    "description": "업무규칙이 있는 쓰기·개인정보 접근 전용 API (Next.js Route Handlers). 단순 읽기는 Supabase 클라이언트+RLS 사용. 초안 — 설계 검토 전."
+  },
+  "paths": {
+    "/api/auth/phone/request": {
+      "post": {
+        "summary": "본인확인 SMS 인증번호 발송",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "required": ["phone"], "properties": {"phone": {"type": "string"}, "purpose": {"type": "string", "enum": ["verify", "prospective"]}}}}}},
+        "responses": {"200": {"description": "발송됨"}, "429": {"description": "요청 과다"}}
+      }
+    },
+    "/api/auth/phone/verify": {
+      "post": {
+        "summary": "인증번호 확인 → 프로필에 본인정보 확정",
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "required": ["phone", "code", "name", "gender", "birthDate"], "properties": {"phone": {"type": "string"}, "code": {"type": "string"}, "name": {"type": "string"}, "gender": {"type": "string", "enum": ["female", "male"]}, "birthDate": {"type": "string", "format": "date"}}}}}},
+        "responses": {"200": {"description": "확인 완료"}, "409": {"description": "동일 실명+연락처의 확인된 계정 존재 (E-M02)"}, "400": {"description": "번호 불일치/만료"}}
+      }
+    },
+    "/api/applications": {
+      "post": {
+        "summary": "공고 지원 (검증: 본인확인·모집중·성별/나이·중복·1일1회)",
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/ApplyRequest"}}}},
+        "responses": {"201": {"description": "지원 완료, 이메일 통지"}, "403": {"description": "본인확인 미완료(E-M01) 또는 조건 불일치(E-P01)"}, "409": {"description": "중복 지원(E-P02) / 1일 한도"}, "410": {"description": "마감(E-P03)"}}
+      }
+    },
+    "/api/applications/{id}/cancel": {
+      "post": {
+        "summary": "지원 취소 (본인, selected 전까지)",
+        "parameters": [{"$ref": "#/components/parameters/Id"}],
+        "responses": {"200": {"description": "취소됨"}, "409": {"description": "selected 상태 취소 불가(E-P05)"}}
+      }
+    },
+    "/api/prospective": {
+      "post": {
+        "summary": "예비참여희망자 등록 (SMS 인증 선행, 휴대폰당 1건)",
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/ProspectiveRequest"}}}},
+        "responses": {"201": {"description": "등록됨"}, "409": {"description": "이미 등록된 휴대폰"}}
+      }
+    },
+    "/api/partner/institutions": {
+      "post": {
+        "summary": "기관 가입 신청 (사업자등록증 업로드 후 호출) → pending",
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/InstitutionSignupRequest"}}}},
+        "responses": {"201": {"description": "신청됨, 관리자에게 통지"}, "409": {"description": "사업자등록번호 중복(E-I02)"}}
+      }
+    },
+    "/api/partner/announcements": {
+      "post": {
+        "summary": "공고 생성(draft) — approved 기관만 (E-A02)",
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/AnnouncementDraft"}}}},
+        "responses": {"201": {"description": "draft 생성"}, "403": {"description": "미승인/정지 기관(E-I01)"}}
+      }
+    },
+    "/api/partner/announcements/{id}": {
+      "patch": {
+        "summary": "공고 수정 — approved 상태에서 모집조건·본문 변경 시 pending_review로 복귀",
+        "parameters": [{"$ref": "#/components/parameters/Id"}],
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/AnnouncementDraft"}}}},
+        "responses": {"200": {"description": "수정됨 (재검수 여부 응답에 포함)"}}
+      }
+    },
+    "/api/partner/announcements/{id}/submit": {
+      "post": {"summary": "검수 제출 (draft|rejected → pending_review)", "parameters": [{"$ref": "#/components/parameters/Id"}], "responses": {"200": {"description": "제출됨, 관리자 통지"}}}
+    },
+    "/api/partner/announcements/{id}/close": {
+      "post": {"summary": "조기마감 (approved → closed)", "parameters": [{"$ref": "#/components/parameters/Id"}], "responses": {"200": {"description": "마감됨"}}}
+    },
+    "/api/partner/applications/{id}": {
+      "get": {
+        "summary": "지원자 상세 열람 — 열람기한 검사 + pii_view 로그 기록 (REQ-061/062)",
+        "parameters": [{"$ref": "#/components/parameters/Id"}],
+        "responses": {"200": {"description": "지원자 정보(개인정보 포함). 첫 열람 시 applied→viewed"}, "403": {"description": "열람기한 경과(E-P04) 또는 타 기관"}}
+      }
+    },
+    "/api/partner/applications/{id}/status": {
+      "post": {
+        "summary": "지원자 상태 변경 (in_progress|selected|not_selected) → 이력 기록 + 지원자 이메일 통지",
+        "parameters": [{"$ref": "#/components/parameters/Id"}],
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "required": ["status"], "properties": {"status": {"type": "string", "enum": ["in_progress", "selected", "not_selected"]}, "reasonCodeId": {"type": "integer"}}}}}},
+        "responses": {"200": {"description": "변경됨"}}
+      }
+    },
+    "/api/admin/institutions/{id}/decision": {
+      "post": {
+        "summary": "기관 승인/반려/정지/해제 (REQ-022/023)",
+        "parameters": [{"$ref": "#/components/parameters/Id"}],
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "required": ["action"], "properties": {"action": {"type": "string", "enum": ["approve", "reject", "suspend", "reinstate"]}, "reason": {"type": "string"}}}}}},
+        "responses": {"200": {"description": "처리됨, 기관에 이메일 통지"}}
+      }
+    },
+    "/api/admin/announcements/{id}/review": {
+      "post": {
+        "summary": "공고 검수 승인/반려 (REQ-031)",
+        "parameters": [{"$ref": "#/components/parameters/Id"}],
+        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "required": ["action"], "properties": {"action": {"type": "string", "enum": ["approve", "reject"]}, "reason": {"type": "string", "description": "reject 시 필수"}}}}}},
+        "responses": {"200": {"description": "처리됨, 기관에 이메일 통지"}}
+      }
+    },
+    "/api/admin/announcements/{id}/visibility": {
+      "post": {"summary": "강제 비노출/해제", "parameters": [{"$ref": "#/components/parameters/Id"}], "responses": {"200": {"description": "처리됨"}}}
+    },
+    "/api/cron/close-expired": {
+      "post": {"summary": "[Vercel Cron] 모집기간 경과 공고 자동 마감 (R-A02)", "responses": {"200": {"description": "마감 처리 건수"}}}
+    }
+  },
+  "components": {
+    "parameters": {
+      "Id": {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+    },
+    "schemas": {
+      "ApplyRequest": {
+        "type": "object",
+        "required": ["announcementId", "city", "district", "consentPrivacy", "consentThirdParty"],
+        "properties": {
+          "announcementId": {"type": "integer"},
+          "city": {"type": "string"}, "district": {"type": "string"},
+          "consentPrivacy": {"type": "boolean"}, "consentThirdParty": {"type": "boolean"},
+          "consentSensitive": {"type": "boolean"}, "consentSensitiveThird": {"type": "boolean"}
+        }
+      },
+      "ProspectiveRequest": {
+        "type": "object",
+        "required": ["name", "phone", "smsToken"],
+        "properties": {
+          "name": {"type": "string"}, "phone": {"type": "string"}, "smsToken": {"type": "string"},
+          "gender": {"type": "string", "enum": ["female", "male"]}, "birthDate": {"type": "string", "format": "date"},
+          "city": {"type": "string"}, "district": {"type": "string"},
+          "personType": {"type": "string", "enum": ["patient", "healthy"]},
+          "diseaseCodeIds": {"type": "array", "items": {"type": "integer"}},
+          "customDisease": {"type": "string"}
+        }
+      },
+      "InstitutionSignupRequest": {
+        "type": "object",
+        "required": ["name", "bizRegNo", "bizCertPath", "phone", "address"],
+        "properties": {
+          "name": {"type": "string"}, "bizRegNo": {"type": "string"},
+          "bizCertPath": {"type": "string", "description": "Storage 업로드 경로"},
+          "phone": {"type": "string"}, "address": {"type": "string"}, "addressDetail": {"type": "string"}
+        }
+      },
+      "AnnouncementDraft": {
+        "type": "object",
+        "required": ["title", "target", "gender", "ageMin", "ageMax", "recruitStart", "recruitEnd", "body"],
+        "properties": {
+          "title": {"type": "string"}, "protocolNo": {"type": "string"}, "sponsorName": {"type": "string"},
+          "clinicalStepId": {"type": "integer"},
+          "indicationCodeIds": {"type": "array", "items": {"type": "integer"}, "maxItems": 3},
+          "target": {"type": "string", "enum": ["patient", "healthy", "all"]},
+          "gender": {"type": "string", "enum": ["female", "male", "any"]},
+          "ageMin": {"type": "integer"}, "ageMax": {"type": "integer"},
+          "targetCount": {"type": "integer"},
+          "recruitStart": {"type": "string", "format": "date"}, "recruitEnd": {"type": "string", "format": "date"},
+          "participationText": {"type": "string"}, "body": {"type": "string"},
+          "thumbnailPath": {"type": "string"}, "attachmentPath": {"type": "string"},
+          "readingPeriodMonths": {"type": "integer", "enum": [36, 60, 120]},
+          "sensitiveConsentRequired": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}
