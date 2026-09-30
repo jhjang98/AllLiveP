@@ -3,14 +3,15 @@
 // 로그인 — 기준 패턴: 폼 (참조: trials/[id]/apply)
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form";
 import { createClient } from "@/lib/supabase/client";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const next = useSearchParams().get("next") ?? "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +28,7 @@ export default function LoginPage() {
       setError("이메일 또는 비밀번호가 올바르지 않습니다.");
       return;
     }
-    router.push("/");
+    router.push(next);
     router.refresh();
   }
 
@@ -66,5 +67,13 @@ export default function LoginPage() {
         </Link>
       </p>
     </form>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
