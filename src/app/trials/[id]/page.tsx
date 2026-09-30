@@ -29,11 +29,8 @@ export default async function TrialDetailPage({
       <SummaryCard trial={trial} />
       <section className="grid gap-2">
         <h2 className="text-base font-bold text-muted">시험 소개</h2>
-        {/* 본문 HTML은 공고 등록 API(PR #6)에서 sanitize 후 저장한다 — 렌더 전 신뢰 가능 상태 유지가 전제 */}
-        <div
-          className="text-base leading-relaxed [&_p]:mb-3"
-          dangerouslySetInnerHTML={{ __html: trial.body }}
-        />
+        {/* v1: 본문은 플레인 텍스트 (기관 입력을 그대로 렌더 — XSS 원천 차단). 리치 에디터 도입 시 sanitize와 함께 변경 */}
+        <p className="text-base leading-relaxed whitespace-pre-line">{trial.body}</p>
       </section>
       <StickyCTA>
         {recruiting ? (
