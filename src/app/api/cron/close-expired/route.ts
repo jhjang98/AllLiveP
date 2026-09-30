@@ -5,7 +5,16 @@ import { jsonError } from "@/lib/auth-user";
 import { kstToday } from "@/lib/kst";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+// Vercel Cron은 GET으로 호출한다
+export async function GET(request: Request) {
+  return handle(request);
+}
+
 export async function POST(request: Request) {
+  return handle(request);
+}
+
+async function handle(request: Request) {
   const secret = process.env.CRON_SECRET?.trim();
   if (!secret) return jsonError(503, "not_configured", "CRON_SECRET이 설정되지 않았습니다.");
   const auth = request.headers.get("authorization");

@@ -6,6 +6,8 @@ import {
   parsePayload,
   replaceIndications,
   toRow,
+  validClinicalStepId,
+  validIndicationIds,
 } from "@/lib/partner-announcements";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -19,6 +21,10 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const { payload, error } = parsePayload(body);
   if (!payload) return jsonError(400, "invalid_payload", error ?? "입력을 확인해 주세요.");
+  if (!(await validIndicationIds(payload.indicationCodeIds)))
+    return jsonError(400, "invalid_payload", "적응증 선택이 올바르지 않습니다.");
+  if (!(await validClinicalStepId(payload.clinicalStepId)))
+    return jsonError(400, "invalid_payload", "임상 단계 선택이 올바르지 않습니다.");
 
   const db = createAdminClient();
   const { data, error: insErr } = await db

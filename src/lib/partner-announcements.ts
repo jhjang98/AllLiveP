@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { kstToday } from "@/lib/kst";
+import { isValidDate, kstToday } from "@/lib/kst";
 
 // 기관회원 공고 작성 페이로드 검증 (등록·수정 공용)
 export interface AnnouncementPayload {
@@ -23,7 +23,6 @@ export interface AnnouncementPayload {
   sensitiveConsentRequired: boolean;
 }
 
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function parsePayload(body: any): { payload?: AnnouncementPayload; error?: string } {
@@ -42,7 +41,7 @@ export function parsePayload(body: any): { payload?: AnnouncementPayload; error?
 
   const recruitStart = String(body?.recruitStart ?? "");
   const recruitEnd = String(body?.recruitEnd ?? "");
-  if (!DATE_RE.test(recruitStart) || !DATE_RE.test(recruitEnd) || recruitStart > recruitEnd)
+  if (!isValidDate(recruitStart) || !isValidDate(recruitEnd) || recruitStart > recruitEnd)
     return { error: "모집 기간을 확인해 주세요." };
 
   const indicationCodeIds = Array.isArray(body?.indicationCodeIds)
@@ -70,6 +69,8 @@ export function parsePayload(body: any): { payload?: AnnouncementPayload; error?
     clinicalStepRaw === null || clinicalStepRaw === undefined || clinicalStepRaw === ""
       ? null
       : Number(clinicalStepRaw);
+  if (clinicalStepId !== null && (!Number.isInteger(clinicalStepId) || clinicalStepId <= 0))
+    return { error: "임상 단계를 확인해 주세요." };
 
   return {
     payload: {
@@ -119,47 +120,78 @@ export function submittable(recruitEnd: string): boolean {
   return recruitEnd >= kstToday();
 }
 
-// 소유 확인: 이 사용자가 이 공고의 기관 담당자인가 (approved 기관)
-export async function getOwnedAnnouncement(userId: string, announcementId: number) {
+// 사용자가 속한 승인 기관 id 목록 (복수 소속 대비)
+async function approvedInstitutionIds(userId: string): Promise<number[]> {
   const db = createAdminClient();
-  const { data: member } = await db
+  const { data } = await db
     .from("institution_members")
     .select("institution_id, institutions ( status )")
-    .eq("profile_id", userId)
-    .limit(1)
-    .maybeSingle();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const instStatus = (member as any)?.institutions?.status;
-  if (!member || instStatus !== "approved") return { error: "institution" as const };
+    .eq("profile_id", userId);
+  return (data ?? [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .filter((m: any) => m.institutions?.status === "approved")
+    .map((m) => m.institution_id);
+}
 
+// 소유 확인: 이 사용자가 이 공고의 기관 담당자인가 (approved 기관)
+export async function getOwnedAnnouncement(userId: string, announcementId: number) {
+  const instIds = await approvedInstitutionIds(userId);
+  if (instIds.length === 0) return { error: "institution" as const };
+
+  const db = createAdminClient();
   const { data: ann } = await db
     .from("announcements")
     .select("*")
     .eq("id", announcementId)
-    .eq("institution_id", member.institution_id)
+    .in("institution_id", instIds)
     .maybeSingle();
   if (!ann) return { error: "not_found" as const };
-  return { announcement: ann, institutionId: member.institution_id };
+  return { announcement: ann, institutionId: ann.institution_id as number };
 }
 
 export async function getApprovedInstitutionId(userId: string): Promise<number | null> {
-  const db = createAdminClient();
-  const { data: member } = await db
-    .from("institution_members")
-    .select("institution_id, institutions ( status )")
-    .eq("profile_id", userId)
-    .limit(1)
-    .maybeSingle();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (!member || (member as any).institutions?.status !== "approved") return null;
-  return member.institution_id;
+  const instIds = await approvedInstitutionIds(userId);
+  return instIds[0] ?? null; // v1: 기관당 담당자 1계정 — 복수 소속이면 첫 기관
 }
 
+// 적응증 코드 검증: 전부 활성 interest 코드여야 한다
+export async function validIndicationIds(codeIds: number[]): Promise<boolean> {
+  const db = createAdminClient();
+  const { count } = await db
+    .from("codes")
+    .select("id", { count: "exact", head: true })
+    .in("id", codeIds)
+    .eq("type", "interest")
+    .eq("active", true);
+  return (count ?? 0) === codeIds.length;
+}
+
+export async function validClinicalStepId(id: number | null): Promise<boolean> {
+  if (id === null) return true;
+  const db = createAdminClient();
+  const { count } = await db
+    .from("codes")
+    .select("id", { count: "exact", head: true })
+    .eq("id", id)
+    .eq("type", "clinical_step")
+    .eq("active", true);
+  return (count ?? 0) === 1;
+}
+
+// 적응증 교체 — 삭제→삽입 대신 "추가 후 잔여 삭제"로, 실패해도 0개가 되지 않게 한다
 export async function replaceIndications(announcementId: number, codeIds: number[]) {
   const db = createAdminClient();
-  await db.from("announcement_indications").delete().eq("announcement_id", announcementId);
-  const { error } = await db
+  const { error: upErr } = await db
     .from("announcement_indications")
-    .insert(codeIds.map((code_id) => ({ announcement_id: announcementId, code_id })));
-  return error;
+    .upsert(codeIds.map((code_id) => ({ announcement_id: announcementId, code_id })), {
+      onConflict: "announcement_id,code_id",
+      ignoreDuplicates: true,
+    });
+  if (upErr) return upErr;
+  const { error: delErr } = await db
+    .from("announcement_indications")
+    .delete()
+    .eq("announcement_id", announcementId)
+    .not("code_id", "in", `(${codeIds.join(",")})`);
+  return delErr;
 }

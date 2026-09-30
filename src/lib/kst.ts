@@ -12,6 +12,14 @@ export function kstDayStartUtc(): string {
   return new Date(new Date(`${today}T00:00:00+09:00`).getTime()).toISOString();
 }
 
+// 달력상 실제 존재하는 날짜인지 (YYYY-MM-DD)
+export function isValidDate(s: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const [y, m, d] = s.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+}
+
 // 만 나이 (R-M02)
 export function koreanAge(birthDate: string): number {
   const today = kstToday();
