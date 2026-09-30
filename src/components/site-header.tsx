@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-async function getUserEmail(): Promise<string | null> {
+async function getSession(): Promise<{ email: string; role: string } | null> {
   // env 미설정(로컬 초기 세팅 전)에서도 페이지가 뜨도록 방어
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return null;
@@ -10,11 +10,13 @@ async function getUserEmail(): Promise<string | null> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  return user?.email ?? null;
+  if (!user?.email) return null;
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  return { email: user.email, role: profile?.role ?? "member" };
 }
 
 export async function SiteHeader() {
-  const email = await getUserEmail();
+  const session = await getSession();
   return (
     <header className="border-b border-line bg-surface">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
@@ -25,9 +27,19 @@ export async function SiteHeader() {
           <Link href="/trials" className="hover:text-ink">
             공고 찾기
           </Link>
-          {email ? (
+          {session?.role === "member" && (
+            <Link href="/me/applications" className="hover:text-ink">
+              내 지원
+            </Link>
+          )}
+          {session?.role === "institution" && (
+            <Link href="/partner" className="font-bold text-primary-deep hover:underline">
+              기관회원
+            </Link>
+          )}
+          {session ? (
             <form action="/auth/signout" method="post" className="flex items-center gap-3">
-              <span className="max-w-40 truncate">{email}</span>
+              <span className="max-w-40 truncate">{session.email}</span>
               <button type="submit" className="font-bold text-primary hover:underline">
                 로그아웃
               </button>
