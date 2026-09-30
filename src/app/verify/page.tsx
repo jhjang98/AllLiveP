@@ -6,13 +6,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form";
+import { safeNext } from "@/lib/nav";
 
 const inputCls =
   "min-h-12 rounded-(--radius-btn) border-[1.5px] border-line bg-surface px-3 text-base w-full";
 
 function VerifyForm() {
   const router = useRouter();
-  const next = useSearchParams().get("next") ?? "/";
+  const next = safeNext(useSearchParams().get("next"));
   const [phone, setPhone] = useState("");
   const [sent, setSent] = useState(false);
   const [code, setCode] = useState("");
@@ -25,38 +26,48 @@ function VerifyForm() {
   async function requestCode() {
     setLoading(true);
     setError(null);
-    const res = await fetch("/api/auth/phone/request", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone }),
-    });
-    const data = await res.json().catch(() => ({}));
-    setLoading(false);
-    if (!res.ok) {
-      setError(data?.error?.message ?? "발송에 실패했습니다.");
-      return;
+    try {
+      const res = await fetch("/api/auth/phone/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error?.message ?? "발송에 실패했습니다.");
+        return;
+      }
+      setSent(true);
+      if (data.devCode) setCode(data.devCode); // 모의 모드 개발 편의
+    } catch {
+      setError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setLoading(false);
     }
-    setSent(true);
-    if (data.devCode) setCode(data.devCode); // 모의 모드 개발 편의
   }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const res = await fetch("/api/auth/phone/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone, code, name, gender, birthDate }),
-    });
-    const data = await res.json().catch(() => ({}));
-    setLoading(false);
-    if (!res.ok) {
-      setError(data?.error?.message ?? "본인확인에 실패했습니다.");
-      return;
+    try {
+      const res = await fetch("/api/auth/phone/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, code, name, gender, birthDate }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error?.message ?? "본인확인에 실패했습니다.");
+        return;
+      }
+      router.push(next);
+      router.refresh();
+    } catch {
+      setError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setLoading(false);
     }
-    router.push(next);
-    router.refresh();
   }
 
   return (

@@ -11,18 +11,21 @@ export function ApplyForm({
   institutionName,
   memberName,
   memberPhone,
+  sensitiveRequired,
 }: {
   trialId: number;
   title: string;
   institutionName: string;
   memberName: string;
   memberPhone: string;
+  sensitiveRequired: boolean;
 }) {
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeThirdParty, setAgreeThirdParty] = useState(false);
   const [agreeSensitive, setAgreeSensitive] = useState(false);
+  const [agreeSensitiveThird, setAgreeSensitiveThird] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -40,7 +43,8 @@ export function ApplyForm({
     );
   }
 
-  const valid = city !== "" && district.trim() !== "" && agreePrivacy && agreeThirdParty;
+  const sensitiveOk = !sensitiveRequired || (agreeSensitive && agreeSensitiveThird);
+  const valid = city !== "" && district.trim() !== "" && agreePrivacy && agreeThirdParty && sensitiveOk;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,25 +54,31 @@ export function ApplyForm({
     }
     setLoading(true);
     setApiError(null);
-    const res = await fetch("/api/applications", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        announcementId: trialId,
-        city,
-        district,
-        consentPrivacy: agreePrivacy,
-        consentThirdParty: agreeThirdParty,
-        consentSensitive: agreeSensitive,
-      }),
-    });
-    setLoading(false);
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setApiError(data?.error?.message ?? "지원 접수에 실패했습니다. 잠시 후 다시 시도해 주세요.");
-      return;
+    try {
+      const res = await fetch("/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          announcementId: trialId,
+          city,
+          district,
+          consentPrivacy: agreePrivacy,
+          consentThirdParty: agreeThirdParty,
+          consentSensitive: agreeSensitive,
+          consentSensitiveThird: agreeSensitiveThird,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setApiError(data?.error?.message ?? "지원 접수에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      setApiError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setLoading(false);
     }
-    setSubmitted(true);
   }
 
   return (
@@ -131,10 +141,17 @@ export function ApplyForm({
         <AgreeItem checked={agreeThirdParty} onChange={setAgreeThirdParty} required>
           실시기관({institutionName}) 제3자 제공 동의
         </AgreeItem>
-        <AgreeItem checked={agreeSensitive} onChange={setAgreeSensitive}>
+        <AgreeItem checked={agreeSensitive} onChange={setAgreeSensitive} required={sensitiveRequired}>
           민감정보(건강정보) 수집 동의
         </AgreeItem>
-        {showErrors && (!agreePrivacy || !agreeThirdParty) && (
+        <AgreeItem
+          checked={agreeSensitiveThird}
+          onChange={setAgreeSensitiveThird}
+          required={sensitiveRequired}
+        >
+          민감정보 제3자({institutionName}) 제공 동의
+        </AgreeItem>
+        {showErrors && (!agreePrivacy || !agreeThirdParty || !sensitiveOk) && (
           <p role="alert" className="text-sm text-err">
             필수 동의 항목에 체크해 주세요.
           </p>

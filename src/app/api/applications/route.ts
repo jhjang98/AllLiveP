@@ -43,6 +43,13 @@ export async function POST(request: Request) {
   if (!ann || ann.hidden || ann.status !== "approved" || dDay(ann.recruit_end) <= 0)
     return jsonError(410, "closed", "모집이 마감되었거나 없는 공고입니다.");
 
+  // 민감정보 동의 (공고 설정 시 필수 — 리뷰 반영)
+  if (
+    ann.sensitive_consent_required &&
+    (body?.consentSensitive !== true || body?.consentSensitiveThird !== true)
+  )
+    return jsonError(400, "consent_required", "이 공고는 민감정보 수집·제공 동의가 필요합니다.");
+
   // 모집조건 (E-P01)
   if (ann.gender !== "any" && ann.gender !== profile.gender)
     return jsonError(403, "condition_gender", "모집 성별 조건에 맞지 않습니다.");

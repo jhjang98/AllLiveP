@@ -40,6 +40,7 @@ export default async function ApplyPage({ params }: { params: Promise<{ id: stri
       institutionName={trial.institutionName}
       memberName={profile.name ?? ""}
       memberPhone={maskedPhone}
+      sensitiveRequired={trial.sensitiveConsentRequired}
     />
   );
 }

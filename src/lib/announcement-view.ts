@@ -20,6 +20,7 @@ export interface AnnouncementView {
   body: string;
   sponsorName: string | null;
   status: "approved" | "closed";
+  sensitiveConsentRequired: boolean;
 }
 
 export const targetLabel: Record<TargetType, string> = {

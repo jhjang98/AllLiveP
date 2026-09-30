@@ -12,14 +12,19 @@ export function CancelButton({ applicationId }: { applicationId: number }) {
   async function cancel() {
     setLoading(true);
     setError(null);
-    const res = await fetch(`/api/applications/${applicationId}/cancel`, { method: "POST" });
-    setLoading(false);
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data?.error?.message ?? "취소에 실패했습니다.");
-      return;
+    try {
+      const res = await fetch(`/api/applications/${applicationId}/cancel`, { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.error?.message ?? "취소에 실패했습니다.");
+        return;
+      }
+      router.refresh();
+    } catch {
+      setError("네트워크 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
     }
-    router.refresh();
   }
 
   if (error) return <span className="text-sm text-err">{error}</span>;

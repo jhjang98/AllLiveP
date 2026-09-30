@@ -35,11 +35,13 @@ export async function POST(request: Request) {
   });
   if (error) return jsonError(500, "server_error", "인증번호 발급에 실패했습니다.");
 
-  const mock = process.env.SMS_MODE !== "live";
-  if (mock) {
+  // 리뷰 반영: 모의 모드는 명시적 opt-in(SMS_MODE=mock)일 때만. env 누락 = 미설정 오류로 처리
+  const mode = process.env.SMS_MODE;
+  if (mode === "mock") {
     console.log(`[sms:mock] ${phone} 인증번호 ${code}`);
     return Response.json({ sent: true, devCode: code });
   }
+  if (mode !== "live") return jsonError(503, "not_configured", "SMS 발송이 설정되지 않았습니다.");
   // TODO(가비아 키 수령 후): lib/sms.ts 실발송
   return Response.json({ sent: true });
 }

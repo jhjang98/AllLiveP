@@ -26,9 +26,11 @@ export default async function MyApplicationsPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/me/applications");
 
+  // 리뷰 반영: RLS(app_inst_read)로 기관회원에게 타인 지원이 보일 수 있으므로 본인 것만 명시
   const { data: apps } = await supabase
     .from("applications")
     .select("id, status, applied_at, announcements ( id, title )")
+    .eq("member_id", user.id)
     .order("applied_at", { ascending: false });
 
   return (
