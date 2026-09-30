@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { StatTile } from "@/components/ui/cards";
 import { getMyInstitution } from "@/lib/institution";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export const metadata = { title: "기관회원" };
@@ -57,7 +58,14 @@ export default async function PartnerHome() {
     );
   }
 
-  // approved — 대시보드 (공고·지원자 수치는 PR #6~7에서 실데이터 연결)
+  // approved — 대시보드 (지원자 수치는 PR #7에서 연결)
+  const db = createAdminClient();
+  const [{ count: published }, { count: pending }, { count: drafts }] = await Promise.all([
+    db.from("announcements").select("id", { count: "exact", head: true }).eq("institution_id", inst.id).eq("status", "approved"),
+    db.from("announcements").select("id", { count: "exact", head: true }).eq("institution_id", inst.id).eq("status", "pending_review"),
+    db.from("announcements").select("id", { count: "exact", head: true }).eq("institution_id", inst.id).in("status", ["draft", "rejected"]),
+  ]);
+
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between gap-3">
@@ -65,13 +73,13 @@ export default async function PartnerHome() {
         <Badge tone="open">승인된 기관</Badge>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatTile label="게시 중 공고" value="—" sub="공고 관리는 곧 제공됩니다" />
-        <StatTile label="새 지원자 (미열람)" value="—" accent />
+        <StatTile label="게시 중 공고" value={published ?? 0} sub={`검수 대기 ${pending ?? 0} · 작성 중 ${drafts ?? 0}`} />
+        <StatTile label="새 지원자 (미열람)" value="—" accent sub="지원자 관리는 곧 제공됩니다" />
         <StatTile label="진행 중 지원자" value="—" />
       </div>
-      <p className="text-[15px] text-muted">
-        공고 등록(검수 후 게시)과 지원자 관리는 다음 업데이트에서 열립니다.
-      </p>
+      <div>
+        <ButtonLink href="/partner/trials">공고 관리로 이동</ButtonLink>
+      </div>
     </div>
   );
 }
