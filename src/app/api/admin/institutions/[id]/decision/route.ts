@@ -30,8 +30,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const body = await request.json().catch(() => null);
   const action = body?.action as Action;
   const reason = String(body?.reason ?? "").trim();
+  if (typeof action !== "string" || !Object.hasOwn(TRANSITIONS, action))
+    return jsonError(400, "invalid_action", "잘못된 처리 유형입니다.");
   const rule = TRANSITIONS[action];
-  if (!rule) return jsonError(400, "invalid_action", "잘못된 처리 유형입니다.");
   if (rule.reasonRequired && !reason) return jsonError(400, "reason_required", "사유를 입력해 주세요.");
 
   const { data: inst } = await db
@@ -43,7 +44,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!rule.from.includes(inst.status))
     return jsonError(409, "invalid_state", `현재 상태(${inst.status})에서는 처리할 수 없습니다.`);
 
-  const { error } = await db
+  const { data: updated, error } = await db
     .from("institutions")
     .update({
       status: rule.to,
@@ -52,8 +53,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       reviewed_at: new Date().toISOString(),
     })
     .eq("id", instId)
-    .eq("status", inst.status); // 동시 처리 방지
+    .eq("status", inst.status) // 동시 처리 방지
+    .select("id");
   if (error) return jsonError(500, "server_error", "처리에 실패했습니다.");
+  if (!updated || updated.length === 0)
+    return jsonError(409, "invalid_state", "다른 관리자가 이미 처리했습니다. 새로고침 후 확인해 주세요.");
 
   // 기관 담당자에게 통지
   const { data: member } = await db

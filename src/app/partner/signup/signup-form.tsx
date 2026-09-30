@@ -15,14 +15,20 @@ export function SignupForm({
 }: {
   resubmission: boolean;
   rejectReason: string | null;
-  defaults: { name: string; bizRegNo: string; phone: string; address: string } | null;
+  defaults: {
+    name: string;
+    bizRegNo: string;
+    phone: string;
+    address: string;
+    addressDetail: string;
+  } | null;
 }) {
   const router = useRouter();
   const [name, setName] = useState(defaults?.name ?? "");
   const [bizRegNo, setBizRegNo] = useState(defaults?.bizRegNo ?? "");
   const [phone, setPhone] = useState(defaults?.phone ?? "");
   const [address, setAddress] = useState(defaults?.address ?? "");
-  const [addressDetail, setAddressDetail] = useState("");
+  const [addressDetail, setAddressDetail] = useState(defaults?.addressDetail ?? "");
   const [cert, setCert] = useState<File | null>(null);
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState<string | null>(null);

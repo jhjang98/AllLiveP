@@ -76,27 +76,52 @@ export async function POST(request: Request) {
 
   let institutionId: number;
   if (mine) {
-    // 반려 후 재신청: 기존 레코드 갱신 (반려 이력은 admin_log 성격의 notifications로 남음)
+    // 반려 후 재신청: 기존 레코드 갱신 (반려 이력은 notifications에 남음)
     const { error } = await db.from("institutions").update(fields).eq("id", mine.id);
-    if (error) return jsonError(500, "server_error", "신청 처리에 실패했습니다.");
+    if (error) {
+      await db.storage.from("certs").remove([path]);
+      if (error.code === "23505")
+        return jsonError(409, "duplicate_bizregno", "이미 등록된 사업자등록번호입니다.");
+      return jsonError(500, "server_error", "신청 처리에 실패했습니다.");
+    }
     institutionId = mine.id;
+    // 이전 증빙(개인정보) 삭제 — 실패는 치명적이지 않으므로 기록만
+    if (mine.bizCertPath && mine.bizCertPath !== path) {
+      const { error: rmErr } = await db.storage.from("certs").remove([mine.bizCertPath]);
+      if (rmErr) console.warn(`[certs] 이전 증빙 삭제 실패: ${mine.bizCertPath}`);
+    }
   } else {
     const { data, error } = await db.from("institutions").insert(fields).select("id").single();
     if (error) {
+      await db.storage.from("certs").remove([path]);
       if (error.code === "23505")
         return jsonError(409, "duplicate_bizregno", "이미 등록된 사업자등록번호입니다.");
       return jsonError(500, "server_error", "신청 처리에 실패했습니다.");
     }
     institutionId = data.id;
-    await db.from("institution_members").insert({ institution_id: institutionId, profile_id: user.id });
-    await db.from("profiles").update({ role: "institution" }).eq("id", user.id);
+    const { error: memberErr } = await db
+      .from("institution_members")
+      .insert({ institution_id: institutionId, profile_id: user.id });
+    if (memberErr) {
+      // 고아 기관 방지: 롤백 후 실패 응답 (사업자번호가 영구히 잠기는 것 방지)
+      await db.from("institutions").delete().eq("id", institutionId);
+      await db.storage.from("certs").remove([path]);
+      return jsonError(500, "server_error", "신청 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    }
+    const { error: roleErr } = await db.from("profiles").update({ role: "institution" }).eq("id", user.id);
+    if (roleErr) console.warn(`[institutions] role 갱신 실패 user=${user.id}: ${roleErr.message}`);
   }
 
-  await notifyEmail(process.env.ADMIN_EMAIL ?? "admin@alllivep.local", "institution_signup_requested", {
-    institutionId,
-    name,
-    resubmission: Boolean(mine),
-  });
+  const adminEmail = process.env.ADMIN_EMAIL?.trim();
+  if (adminEmail) {
+    await notifyEmail(adminEmail, "institution_signup_requested", {
+      institutionId,
+      name,
+      resubmission: Boolean(mine),
+    });
+  } else {
+    console.warn("[institutions] ADMIN_EMAIL 미설정 — 가입 신청 알림을 보내지 못했습니다");
+  }
 
   return Response.json({ id: institutionId, status: "pending" }, { status: 201 });
 }

@@ -8,7 +8,9 @@ export interface MyInstitution {
   status: "pending" | "approved" | "rejected" | "suspended";
   statusReason: string | null;
   bizRegNo: string;
+  bizCertPath: string;
   address: string | null;
+  addressDetail: string | null;
   phone: string | null;
 }
 
@@ -17,7 +19,9 @@ export async function getMyInstitution(userId: string): Promise<MyInstitution | 
   const db = createAdminClient();
   const { data } = await db
     .from("institution_members")
-    .select("institutions ( id, name, status, status_reason, biz_reg_no, address, phone )")
+    .select(
+      "institutions ( id, name, status, status_reason, biz_reg_no, biz_cert_path, address, address_detail, phone )",
+    )
     .eq("profile_id", userId)
     .limit(1)
     .maybeSingle();
@@ -30,7 +34,9 @@ export async function getMyInstitution(userId: string): Promise<MyInstitution | 
     status: inst.status,
     statusReason: inst.status_reason,
     bizRegNo: inst.biz_reg_no,
+    bizCertPath: inst.biz_cert_path,
     address: inst.address,
+    addressDetail: inst.address_detail,
     phone: inst.phone,
   };
 }

@@ -23,7 +23,13 @@ export default async function PartnerSignupPage() {
       rejectReason={inst?.statusReason ?? null}
       defaults={
         inst
-          ? { name: inst.name, bizRegNo: inst.bizRegNo, phone: inst.phone ?? "", address: inst.address ?? "" }
+          ? {
+              name: inst.name,
+              bizRegNo: inst.bizRegNo,
+              phone: inst.phone ?? "",
+              address: inst.address ?? "",
+              addressDetail: inst.addressDetail ?? "",
+            }
           : null
       }
     />
