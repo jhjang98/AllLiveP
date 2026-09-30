@@ -135,6 +135,23 @@ async function seedAnnouncements(instId, ownerId) {
   }
 }
 
+async function ensureAdminUser() {
+  const { data: list } = await db.auth.admin.listUsers({ perPage: 200 });
+  let user = list.users.find((u) => u.email === "admin-test@alllivep.local");
+  if (!user) {
+    const { data, error } = await db.auth.admin.createUser({
+      email: "admin-test@alllivep.local",
+      password: "Admin!2345",
+      email_confirm: true,
+    });
+    if (error) throw error;
+    user = data.user;
+  }
+  await db.from("profiles").update({ role: "admin", name: "테스트관리자" }).eq("id", user.id);
+  return user.id;
+}
+
+console.log("admin user:", await ensureAdminUser());
 const ownerId = await ensurePartnerUser();
 console.log("partner user:", ownerId);
 const instId = await ensureInstitution(ownerId);
