@@ -7,7 +7,7 @@ import type { AnnouncementView } from "@/lib/announcement-view";
 export * from "@/lib/announcement-view";
 
 const SELECT = `id, title, target, gender, age_min, age_max, target_count,
-  recruit_start, recruit_end, participation_text, body, sponsor_name, status,
+  recruit_start, recruit_end, participation_text, body, sponsor_name, status, sensitive_consent_required,
   institutions ( name, address ),
   announcement_indications ( codes ( name ) )`;
 
@@ -33,6 +33,7 @@ function toView(row: any): AnnouncementView {
     body: row.body,
     sponsorName: row.sponsor_name,
     status: row.status,
+    sensitiveConsentRequired: row.sensitive_consent_required ?? false,
   };
 }
 
