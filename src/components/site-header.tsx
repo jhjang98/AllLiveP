@@ -37,6 +37,11 @@ export async function SiteHeader() {
               기관회원
             </Link>
           )}
+          {session?.role === "admin" && (
+            <Link href="/admin" className="font-bold text-primary-deep hover:underline">
+              관리자
+            </Link>
+          )}
           {session ? (
             <form action="/auth/signout" method="post" className="flex items-center gap-3">
               <span className="max-w-40 truncate">{session.email}</span>
