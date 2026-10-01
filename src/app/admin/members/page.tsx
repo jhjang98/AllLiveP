@@ -14,16 +14,20 @@ function maskPhone(phone: string | null): string {
 
 export default async function AdminMembersPage() {
   const db = createAdminClient();
-  const [{ data: profiles }, { data: users }] = await Promise.all([
-    db
-      .from("profiles")
-      .select("id, name, phone, phone_verified_at, created_at, withdrawn_at")
-      .eq("role", "member")
-      .order("created_at", { ascending: false })
-      .limit(100),
-    db.auth.admin.listUsers({ perPage: 200 }),
-  ]);
-  const emailById = new Map(users.users.map((u) => [u.id, u.email ?? "-"]));
+  const { data: profiles } = await db
+    .from("profiles")
+    .select("id, name, phone, phone_verified_at, created_at, withdrawn_at")
+    .eq("role", "member")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  // 이메일 매핑 — 전 페이지 순회 (페이지당 200, 상한 20페이지)
+  const emailById = new Map<string, string>();
+  for (let page = 1; page <= 20; page++) {
+    const { data } = await db.auth.admin.listUsers({ page, perPage: 200 });
+    for (const u of data.users) emailById.set(u.id, u.email ?? "-");
+    if (data.users.length < 200) break;
+  }
 
   return (
     <div className="grid gap-5">

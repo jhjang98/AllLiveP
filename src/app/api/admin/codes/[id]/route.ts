@@ -14,7 +14,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const body = await request.json().catch(() => null);
   const patch: Record<string, unknown> = {};
   if (typeof body?.name === "string" && body.name.trim()) patch.name = body.name.trim();
-  if (Number.isInteger(Number(body?.sort))) patch.sort = Number(body.sort);
+  if (typeof body?.sort === "number" && Number.isInteger(body.sort)) patch.sort = body.sort;
   if (typeof body?.active === "boolean") patch.active = body.active;
   if (Object.keys(patch).length === 0) return jsonError(400, "empty_patch", "변경할 내용이 없습니다.");
 

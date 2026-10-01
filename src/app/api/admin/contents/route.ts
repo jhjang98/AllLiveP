@@ -68,7 +68,7 @@ export async function PATCH(request: Request) {
     if (typeof body?.question === "string" && body.question.trim()) patch.question = body.question.trim();
     if (typeof body?.answer === "string" && body.answer.trim()) patch.answer = body.answer.trim();
     if (typeof body?.category === "string") patch.category = body.category.trim() || null;
-    if (Number.isInteger(Number(body?.sort))) patch.sort = Number(body.sort);
+    if (typeof body?.sort === "number" && Number.isInteger(body.sort)) patch.sort = body.sort;
   } else {
     return jsonError(400, "invalid_kind", "잘못된 콘텐츠 유형입니다.");
   }
