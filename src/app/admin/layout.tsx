@@ -26,6 +26,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/institutions" className="text-muted hover:text-ink">
           기관 승인
         </Link>
+        <Link href="/admin/applications" className="text-muted hover:text-ink">
+          지원 현황
+        </Link>
+        <Link href="/admin/members" className="text-muted hover:text-ink">
+          회원
+        </Link>
+        <Link href="/admin/codes" className="text-muted hover:text-ink">
+          코드
+        </Link>
+        <Link href="/admin/contents" className="text-muted hover:text-ink">
+          콘텐츠
+        </Link>
+        <Link href="/admin/logs" className="text-muted hover:text-ink">
+          감사 로그
+        </Link>
       </nav>
       {children}
     </div>
