@@ -24,6 +24,15 @@ export function jsonError(status: number, code: string, message: string) {
   return Response.json({ error: { code, message } }, { status });
 }
 
+// 관리자 확인: admin이면 User, 아니면 null (호출부에서 403 처리)
+export async function getAdminUser(request: Request): Promise<User | null> {
+  const user = await getAuthUser(request);
+  if (!user) return null;
+  const admin = createAdminClient();
+  const { data: me } = await admin.from("profiles").select("role").eq("id", user.id).single();
+  return me?.role === "admin" ? user : null;
+}
+
 // X-Forwarded-For 첫 토큰이 유효한 IP일 때만 반환 (inet 캐스트 실패 방지 — 위조 가능 값)
 export function clientIp(request: Request): string | null {
   const raw = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();

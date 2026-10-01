@@ -22,8 +22,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen">
         <SiteHeader />
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-        <footer className="mt-16 border-t border-line py-8 text-center text-sm text-muted">
-          AllLiveP · 임상시험 대상자 모집 플랫폼
+        <footer className="mt-16 grid justify-items-center gap-2 border-t border-line py-8 text-center text-sm text-muted">
+          <nav className="flex gap-4">
+            <a href="/notice" className="hover:text-ink">공지사항</a>
+            <a href="/faq" className="hover:text-ink">자주 묻는 질문</a>
+            <a href="/partner/signup" className="hover:text-ink">기관 입점 신청</a>
+          </nav>
+          <span>AllLiveP · 임상시험 대상자 모집 플랫폼</span>
         </footer>
       </body>
     </html>
