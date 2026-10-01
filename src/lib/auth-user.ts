@@ -1,5 +1,6 @@
 import "server-only";
 
+import { isIP } from "node:net";
 import type { User } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -21,4 +22,10 @@ export async function getAuthUser(request: Request): Promise<User | null> {
 
 export function jsonError(status: number, code: string, message: string) {
   return Response.json({ error: { code, message } }, { status });
+}
+
+// X-Forwarded-For 첫 토큰이 유효한 IP일 때만 반환 (inet 캐스트 실패 방지 — 위조 가능 값)
+export function clientIp(request: Request): string | null {
+  const raw = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return raw && isIP(raw) ? raw : null;
 }

@@ -1,7 +1,7 @@
 // POST /api/partner/applications/{id}/status — 지원자 상태 변경 (docs/domain/application.md)
 // in_progress: viewed에서 / selected·not_selected: viewed|in_progress에서 (미선정은 사유 필수)
 
-import { getAuthUser, jsonError } from "@/lib/auth-user";
+import { clientIp, getAuthUser, jsonError } from "@/lib/auth-user";
 import { getOwnedApplication, withinReadingPeriod } from "@/lib/applicant-access";
 import { notifyEmail } from "@/lib/notify";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -65,15 +65,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!updated || updated.length === 0)
     return jsonError(409, "state_changed", "상태가 이미 변경되었습니다. 새로고침 후 확인해 주세요.");
 
-  await db.from("application_events").insert({
+  const { error: evErr } = await db.from("application_events").insert({
     application_id: appId,
     actor_id: user.id,
     actor_role: "institution",
     event: "status_change",
     from_status: app.status,
     to_status: to,
-    ip: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null,
+    ip: clientIp(request),
   });
+  if (evErr) console.error(`[events] 상태 이력 기록 실패 app=${appId} ${app.status}→${to}: ${evErr.message}`);
 
   // 지원자에게 이메일 통지 (REQ-070)
   const { data: memberUser } = await db.auth.admin.getUserById(app.member_id);

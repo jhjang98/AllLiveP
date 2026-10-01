@@ -54,6 +54,7 @@ export function ApplicantRow({
       }
       setDetail(data);
       setStatus(data.status);
+      router.refresh(); // 미열람 수치 갱신
     } catch {
       setError("네트워크 오류가 발생했습니다.");
     } finally {

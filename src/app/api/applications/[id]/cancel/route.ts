@@ -1,6 +1,6 @@
 // POST /api/applications/{id}/cancel — 지원 취소 (본인, selected 전까지 — E-P05)
 
-import { getAuthUser, jsonError } from "@/lib/auth-user";
+import { clientIp, getAuthUser, jsonError } from "@/lib/auth-user";
 import { notifyEmail } from "@/lib/notify";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -34,15 +34,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     .in("status", CANCELABLE); // 동시성: 조회 후 변경된 상태 방지
   if (error) return jsonError(500, "server_error", "취소 처리에 실패했습니다.");
 
-  await db.from("application_events").insert({
+  const { error: evErr } = await db.from("application_events").insert({
     application_id: appId,
     actor_id: user.id,
     actor_role: "member",
     event: "status_change",
     from_status: app.status,
     to_status: "canceled",
-    ip: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null,
+    ip: clientIp(request),
   });
+  if (evErr) console.error(`[events] 취소 이력 기록 실패 app=${appId}: ${evErr.message}`);
 
   if (user.email) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
