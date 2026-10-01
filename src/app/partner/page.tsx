@@ -60,11 +60,14 @@ export default async function PartnerHome() {
 
   // approved — 대시보드 (지원자 수치는 PR #7에서 연결)
   const db = createAdminClient();
-  const [{ count: published }, { count: pending }, { count: drafts }] = await Promise.all([
-    db.from("announcements").select("id", { count: "exact", head: true }).eq("institution_id", inst.id).eq("status", "approved"),
-    db.from("announcements").select("id", { count: "exact", head: true }).eq("institution_id", inst.id).eq("status", "pending_review"),
-    db.from("announcements").select("id", { count: "exact", head: true }).eq("institution_id", inst.id).in("status", ["draft", "rejected"]),
-  ]);
+  const [{ count: published }, { count: pending }, { count: drafts }, { count: unviewed }, { count: active }] =
+    await Promise.all([
+      db.from("announcements").select("id", { count: "exact", head: true }).eq("institution_id", inst.id).eq("status", "approved"),
+      db.from("announcements").select("id", { count: "exact", head: true }).eq("institution_id", inst.id).eq("status", "pending_review"),
+      db.from("announcements").select("id", { count: "exact", head: true }).eq("institution_id", inst.id).in("status", ["draft", "rejected"]),
+      db.from("applications").select("id, announcements!inner(institution_id)", { count: "exact", head: true }).eq("announcements.institution_id", inst.id).eq("status", "applied"),
+      db.from("applications").select("id, announcements!inner(institution_id)", { count: "exact", head: true }).eq("announcements.institution_id", inst.id).in("status", ["viewed", "in_progress"]),
+    ]);
 
   return (
     <div className="grid gap-6">
@@ -74,8 +77,8 @@ export default async function PartnerHome() {
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <StatTile label="게시 중 공고" value={published ?? 0} sub={`검수 대기 ${pending ?? 0} · 작성 중 ${drafts ?? 0}`} />
-        <StatTile label="새 지원자 (미열람)" value="—" accent sub="지원자 관리는 곧 제공됩니다" />
-        <StatTile label="진행 중 지원자" value="—" />
+        <StatTile label="새 지원자 (미열람)" value={unviewed ?? 0} accent={(unviewed ?? 0) > 0} />
+        <StatTile label="진행 중 지원자" value={active ?? 0} sub="열람·진행 중" />
       </div>
       <div>
         <ButtonLink href="/partner/trials">공고 관리로 이동</ButtonLink>

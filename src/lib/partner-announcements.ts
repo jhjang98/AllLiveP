@@ -121,7 +121,7 @@ export function submittable(recruitEnd: string): boolean {
 }
 
 // 사용자가 속한 승인 기관 id 목록 (복수 소속 대비)
-async function approvedInstitutionIds(userId: string): Promise<number[]> {
+export async function approvedInstitutionIds(userId: string): Promise<number[]> {
   const db = createAdminClient();
   const { data } = await db
     .from("institution_members")
