@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { getOwnedAnnouncement } from "@/lib/partner-announcements";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { statusBadge } from "../status-badge";
 import { AnnouncementActions } from "./actions";
@@ -21,6 +22,12 @@ export default async function PartnerTrialDetail({ params }: { params: Promise<{
   if (owned.error === "not_found") notFound();
   const ann = owned.announcement;
   const s = statusBadge[ann.status] ?? { text: ann.status, tone: "closed" as const };
+
+  const db = createAdminClient();
+  const [{ count: applicants }, { count: unviewed }] = await Promise.all([
+    db.from("applications").select("id", { count: "exact", head: true }).eq("announcement_id", ann.id),
+    db.from("applications").select("id", { count: "exact", head: true }).eq("announcement_id", ann.id).eq("status", "applied"),
+  ]);
 
   return (
     <div className="grid gap-5">
@@ -48,6 +55,9 @@ export default async function PartnerTrialDetail({ params }: { params: Promise<{
       </section>
 
       <div className="flex flex-wrap items-center gap-3">
+        <ButtonLink href={`/partner/trials/${ann.id}/applicants`}>
+          지원자 보기 ({applicants ?? 0}{(unviewed ?? 0) > 0 ? ` · 미열람 ${unviewed}` : ""})
+        </ButtonLink>
         {ann.status !== "closed" && (
           <ButtonLink href={`/partner/trials/${ann.id}/edit`} variant="outline">
             수정

@@ -2,7 +2,7 @@
 // 검증 순서: 로그인 → 본인확인(E-M01) → 공고 존재·모집중(E-P03) → 성별·나이(E-P01/R-P01)
 //           → 1일 1회(R-P03) → 중복(E-P02, unique 제약) → 저장 + 이력 + 알림
 
-import { getAuthUser, jsonError } from "@/lib/auth-user";
+import { clientIp, getAuthUser, jsonError } from "@/lib/auth-user";
 import { dDay } from "@/lib/announcement-view";
 import { koreanAge, kstDayStartUtc } from "@/lib/kst";
 import { notifyEmail } from "@/lib/notify";
@@ -87,14 +87,15 @@ export async function POST(request: Request) {
     return jsonError(500, "server_error", "지원 접수에 실패했습니다. 잠시 후 다시 시도해 주세요.");
   }
 
-  await db.from("application_events").insert({
+  const { error: evErr } = await db.from("application_events").insert({
     application_id: app.id,
     actor_id: user.id,
     actor_role: "member",
     event: "submit",
     to_status: "applied",
-    ip: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null,
+    ip: clientIp(request),
   });
+  if (evErr) console.error(`[events] 접수 이력 기록 실패 app=${app.id}: ${evErr.message}`);
 
   if (user.email) {
     await notifyEmail(user.email, "application_received", {
