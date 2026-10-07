@@ -9,11 +9,13 @@
 - 밀도: 접근성 우선 — 큰 글씨, 높은 대비, 단순 동선 (중장년 참여자 고려)
 - 구조: 검색·필터 중심의 플랫폼형 재설계
 
-## 테마 프리셋 (확정 — 시안 v1 승인)
+## 테마 프리셋 (v2 — 2026-10-07 그린 전환, 사용자 확정)
 
-- Primary #15579E / Primary-deep #0F3D70 / Accent(CTA 한정) #C9501F
-- Ink #1C2B3A / Muted #5A6B7E / BG #F2F5F9 / Surface #FFF / Border #DCE3EB
+- 로고(그린 계열, We Connect Health) 확정에 따라 Primary를 블루→그린으로 전환
+- Primary #1F7A3D / Primary-deep #0F4D26 / Accent(CTA 한정) #C9501F 유지
+- Ink #1B2A20 / Muted #5A6B5F / BG #F2F6F2 / Surface #FFF / Border #DBE4DC
 - 상태색: 성공 #1D8A4E / 경고 #B97D10 / 오류 #C6373C
+- (v1 블루 #15579E 계열은 2026-09-28~10-07 사용 후 폐기)
 - 서체: Pretendard(자체 호스팅). 본문 17px 이상, 최소 15px
 - 라운드: 카드 12px, 버튼 10px. 그림자 최소, 보더 위주. 터치 타깃 44px+
 
