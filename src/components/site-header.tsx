@@ -22,8 +22,16 @@ export async function SiteHeader() {
     <header className="border-b border-line bg-surface">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <Link href="/" className="flex items-center">
-          {/* 원본 2168x725 (약 3:1) — 표시 높이 40px */}
-          <Image src="/logo.png" alt="AllLiveP — We Connect Health" width={120} height={40} priority />
+          {/* 4배율 에셋(478x160)을 재압축 없이 서빙 — 표시 높이 40px (원본: assets/brand/logo-original.png) */}
+          <Image
+            src="/logo.png"
+            alt="AllLiveP — We Connect Health"
+            width={478}
+            height={160}
+            className="h-10 w-auto"
+            priority
+            unoptimized
+          />
         </Link>
         <nav className="flex items-center gap-5 text-[15px] text-muted">
           <Link href="/trials" className="hover:text-ink">
