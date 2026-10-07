@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
 
@@ -20,8 +21,9 @@ export async function SiteHeader() {
   return (
     <header className="border-b border-line bg-surface">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="text-xl font-black text-primary-deep">
-          AllLive<span className="text-accent">P</span>
+        <Link href="/" className="flex items-center">
+          {/* 원본 2168x725 (약 3:1) — 표시 높이 40px */}
+          <Image src="/logo.png" alt="AllLiveP — We Connect Health" width={120} height={40} priority />
         </Link>
         <nav className="flex items-center gap-5 text-[15px] text-muted">
           <Link href="/trials" className="hover:text-ink">
