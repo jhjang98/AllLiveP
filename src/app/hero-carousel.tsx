@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { type AnnouncementView, dDay, genderLabel, targetLabel } from "@/lib/announcement-view";
+import { categoryImage } from "@/lib/category-image";
 
 // 적응증 카테고리별 비주얼 (썸네일이 없는 공고의 대체 그래픽 — 그린 팔레트 내 색조 변주)
 function categoryHue(name: string): number {
@@ -99,17 +100,21 @@ export function HeroCarousel({ slides }: { slides: AnnouncementView[] }) {
               </div>
             </div>
             <div className="order-first sm:order-none">
-              {t.thumbnailUrl ? (
-                <Image
-                  src={t.thumbnailUrl}
-                  alt=""
-                  width={600}
-                  height={360}
-                  className="h-36 w-full rounded-(--radius-card) object-cover sm:h-full sm:min-h-44"
-                />
-              ) : (
-                <CategoryVisual category={t.indications[0] ?? "임상시험"} />
-              )}
+              {/* 우선순위: 기관 업로드 썸네일 → 분야 일러스트 → 코드 그래픽 */}
+              {(() => {
+                const img = t.thumbnailUrl ?? categoryImage(t.indications);
+                return img ? (
+                  <Image
+                    src={img}
+                    alt=""
+                    width={900}
+                    height={598}
+                    className="h-36 w-full rounded-(--radius-card) object-cover sm:h-full sm:min-h-44"
+                  />
+                ) : (
+                  <CategoryVisual category={t.indications[0] ?? "임상시험"} />
+                );
+              })()}
             </div>
           </article>
         ))}
