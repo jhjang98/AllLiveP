@@ -4,7 +4,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 export function ThumbnailUploader({
@@ -15,6 +15,7 @@ export function ThumbnailUploader({
   currentUrl: string | null;
 }) {
   const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +37,7 @@ export function ThumbnailUploader({
         return;
       }
       setFile(null);
+      if (inputRef.current) inputRef.current.value = "";
       router.refresh();
     } catch {
       setError("네트워크 오류가 발생했습니다.");
@@ -62,6 +64,7 @@ export function ThumbnailUploader({
       )}
       <div className="flex flex-wrap items-center gap-3">
         <input
+          ref={inputRef}
           id={`thumb-${announcementId}`}
           type="file"
           accept="image/jpeg,image/png,image/webp"

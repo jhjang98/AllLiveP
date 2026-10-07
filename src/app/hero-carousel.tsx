@@ -80,7 +80,10 @@ export function HeroCarousel({ slides }: { slides: AnnouncementView[] }) {
             <div className="grid content-center gap-3">
               <div className="flex items-center gap-2.5">
                 <Badge tone="open">모집중</Badge>
-                <span className="text-sm font-bold text-accent tabular-nums">D-{dDay(t.recruitEnd)}</span>
+                {/* 자정 전후 서버·클라이언트 계산 차이 허용 */}
+                <span suppressHydrationWarning className="text-sm font-bold text-accent tabular-nums">
+                  D-{dDay(t.recruitEnd)}
+                </span>
               </div>
               <h2 className="line-clamp-2 text-xl leading-snug font-black text-balance sm:text-2xl">
                 {t.title}
