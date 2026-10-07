@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { statusBadge } from "../status-badge";
 import { AnnouncementActions } from "./actions";
+import { ThumbnailUploader } from "./thumbnail-uploader";
 
 export default async function PartnerTrialDetail({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createServerSupabase();
@@ -53,6 +54,17 @@ export default async function PartnerTrialDetail({ params }: { params: Promise<{
         <h2 className="text-base font-bold text-muted">시험 설명</h2>
         <p className="text-base leading-relaxed whitespace-pre-line">{ann.body}</p>
       </section>
+
+      {ann.status !== "closed" && (
+        <ThumbnailUploader
+          announcementId={ann.id}
+          currentUrl={
+            ann.thumbnail_path
+              ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/thumbs/${ann.thumbnail_path}`
+              : null
+          }
+        />
+      )}
 
       <div className="flex flex-wrap items-center gap-3">
         <ButtonLink href={`/partner/trials/${ann.id}/applicants`}>

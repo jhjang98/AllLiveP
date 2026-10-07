@@ -1,13 +1,18 @@
 import { ButtonLink } from "@/components/ui/button";
 import { TrialCard } from "@/components/ui/cards";
 import { isRecruiting, listAnnouncements } from "@/lib/announcements";
+import { HeroCarousel } from "./hero-carousel";
 
 export default async function HomePage() {
   const recruiting = (await listAnnouncements()).filter(isRecruiting);
+  // 배너: 모집 종료 임박 순 상위 5건 (노출 등급 도입 전 기본 정렬)
+  const bannerSlides = recruiting.slice(0, 5);
   return (
     <div className="grid gap-8">
-      <section className="grid gap-3 py-6 text-center">
-        <h1 className="text-3xl font-black text-balance">
+      <HeroCarousel slides={bannerSlides} />
+
+      <section className="grid gap-2 py-2 text-center">
+        <h1 className="text-2xl font-black text-balance sm:text-3xl">
           건강한 참여, 신뢰할 수 있는 임상시험
         </h1>
         <p className="text-muted">검수를 거친 모집 공고만 게시됩니다.</p>

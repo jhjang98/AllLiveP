@@ -7,7 +7,7 @@ import type { AnnouncementView } from "@/lib/announcement-view";
 export * from "@/lib/announcement-view";
 
 const SELECT = `id, title, target, gender, age_min, age_max, target_count,
-  recruit_start, recruit_end, participation_text, body, sponsor_name, status, sensitive_consent_required,
+  recruit_start, recruit_end, participation_text, body, sponsor_name, status, sensitive_consent_required, thumbnail_path,
   institutions ( name, address ),
   announcement_indications ( codes ( name ) )`;
 
@@ -34,6 +34,9 @@ function toView(row: any): AnnouncementView {
     sponsorName: row.sponsor_name,
     status: row.status,
     sensitiveConsentRequired: row.sensitive_consent_required ?? false,
+    thumbnailUrl: row.thumbnail_path
+      ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/thumbs/${row.thumbnail_path}`
+      : null,
   };
 }
 
