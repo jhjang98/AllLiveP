@@ -21,6 +21,10 @@
   --font-sans: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo",
     "Malgun Gothic", sans-serif;
 
+  /* 굵기 완화 (2026-10-07): 전체가 강해 보인다는 피드백 반영 — black 900→700, bold 700→600 */
+  --font-weight-black: 700;
+  --font-weight-bold: 600;
+
   --radius-card: 12px;
   --radius-btn: 10px;
 }
