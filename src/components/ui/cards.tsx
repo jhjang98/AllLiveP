@@ -43,7 +43,7 @@ export function SummaryCard({ trial }: { trial: AnnouncementView }) {
   if (trial.targetCount) rows.push(["모집인원", `${trial.targetCount}명`]);
   if (trial.sponsorName) rows.push(["의뢰기관", trial.sponsorName]);
   return (
-    <dl className="grid gap-2.5 rounded-(--radius-card) border border-line bg-[#f7f9fc] p-4">
+    <dl className="grid gap-2.5 rounded-(--radius-card) border border-line bg-bg p-4">
       {rows.map(([k, v]) => (
         <div key={k} className="flex gap-3 text-[15px]">
           <dt className="w-20 flex-none text-muted">{k}</dt>

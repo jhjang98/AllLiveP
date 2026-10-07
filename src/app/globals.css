@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
-/* 디자인 토큰 — docs/design.md 확정값 (시안 v1 승인 2026-09-28) */
+/* 디자인 토큰 — docs/design.md (2026-10-07 그린 테마 전환: 로고 그린 계열 반영, 사용자 확정) */
 @theme {
-  --color-primary: #15579e;
-  --color-primary-deep: #0f3d70;
-  --color-primary-soft: #e8f0fa;
+  --color-primary: #1f7a3d;
+  --color-primary-deep: #0f4d26;
+  --color-primary-soft: #e7f4ea;
   --color-accent: #c9501f;
   --color-accent-soft: #fbeee7;
-  --color-ink: #1c2b3a;
-  --color-muted: #5a6b7e;
-  --color-bg: #f2f5f9;
+  --color-ink: #1b2a20;
+  --color-muted: #5a6b5f;
+  --color-bg: #f2f6f2;
   --color-surface: #ffffff;
-  --color-line: #dce3eb;
+  --color-line: #dbe4dc;
   --color-ok: #1d8a4e;
   --color-ok-soft: #e6f4ec;
   --color-warn: #b97d10;
