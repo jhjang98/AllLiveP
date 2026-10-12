@@ -23,8 +23,11 @@ export default async function AdminHome() {
         <StatTile label="승인 대기 기관" value={pendingInstitutions ?? 0} accent={(pendingInstitutions ?? 0) > 0} />
         <StatTile label="게시 중 공고" value={published ?? 0} />
       </div>
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <ButtonLink href="/admin/reviews">공고 검수</ButtonLink>
+        <ButtonLink href="/admin/trials" variant="outline">
+          공고 관리
+        </ButtonLink>
         <ButtonLink href="/admin/institutions" variant="outline">
           기관 승인
         </ButtonLink>

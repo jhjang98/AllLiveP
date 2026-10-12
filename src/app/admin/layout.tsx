@@ -23,6 +23,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/reviews" className="text-muted hover:text-ink">
           공고 검수
         </Link>
+        <Link href="/admin/trials" className="text-muted hover:text-ink">
+          공고 관리
+        </Link>
         <Link href="/admin/institutions" className="text-muted hover:text-ink">
           기관 승인
         </Link>
