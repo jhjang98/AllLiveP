@@ -22,7 +22,7 @@ function CategoryVisual({ category }: { category: string }) {
   return (
     <div
       aria-hidden
-      className="relative flex h-full min-h-36 w-full items-end overflow-hidden rounded-(--radius-card)"
+      className="relative flex h-full w-full items-end justify-center"
       style={{
         background: `
           radial-gradient(120% 90% at 85% 10%, hsl(${hue} 45% 72% / .9), transparent 55%),
@@ -31,10 +31,10 @@ function CategoryVisual({ category }: { category: string }) {
       }}
     >
       {/* 십자(+) 모티프 */}
-      <svg viewBox="0 0 100 100" className="absolute -top-4 -right-4 h-36 w-36 opacity-20">
+      <svg viewBox="0 0 100 100" className="absolute -top-2 -right-2 h-28 w-28 opacity-20">
         <path d="M40 10h20v30h30v20H60v30H40V60H10V40h30z" fill="white" />
       </svg>
-      <span className="m-4 rounded-full bg-white/85 px-3.5 py-1 text-sm font-bold" style={{ color: `hsl(${hue + 20} 50% 24%)` }}>
+      <span className="mb-6 rounded-full bg-white/85 px-3.5 py-1 text-sm font-bold" style={{ color: `hsl(${hue + 20} 50% 24%)` }}>
         {category}
       </span>
     </div>
@@ -99,22 +99,24 @@ export function HeroCarousel({ slides }: { slides: AnnouncementView[] }) {
                 </ButtonLink>
               </div>
             </div>
-            <div className="order-first sm:order-none">
-              {/* 우선순위: 기관 업로드 썸네일 → 분야 일러스트 → 코드 그래픽 */}
-              {(() => {
-                const img = t.thumbnailUrl ?? categoryImage(t.indications);
-                return img ? (
-                  <Image
-                    src={img}
-                    alt=""
-                    width={900}
-                    height={598}
-                    className="h-36 w-full rounded-(--radius-card) object-cover sm:h-full sm:min-h-44"
-                  />
-                ) : (
-                  <CategoryVisual category={t.indications[0] ?? "임상시험"} />
-                );
-              })()}
+            <div className="order-first flex items-center justify-center sm:order-none">
+              {/* 원형 비주얼 — 우선순위: 기관 업로드 썸네일 → 분야 일러스트 → 코드 그래픽 */}
+              <div className="size-36 overflow-hidden rounded-full border-4 border-primary-soft shadow-sm sm:size-52">
+                {(() => {
+                  const img = t.thumbnailUrl ?? categoryImage(t.indications);
+                  return img ? (
+                    <Image
+                      src={img}
+                      alt=""
+                      width={900}
+                      height={598}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <CategoryVisual category={t.indications[0] ?? "임상시험"} />
+                  );
+                })()}
+              </div>
             </div>
           </article>
         ))}
