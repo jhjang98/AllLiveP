@@ -5,7 +5,6 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { type AnnouncementView, dDay, genderLabel, targetLabel } from "@/lib/announcement-view";
 import { categoryImage } from "@/lib/category-image";
@@ -78,18 +77,20 @@ export function HeroCarousel({ slides }: { slides: AnnouncementView[] }) {
             aria-hidden={i !== index}
             className="grid w-full flex-none gap-4 p-5 pb-8 sm:grid-cols-[1fr_300px] sm:p-7"
           >
-            <div className="grid content-center gap-3">
-              <div className="flex items-center gap-2.5">
-                <Badge tone="open">모집중</Badge>
+            <div className="grid content-center gap-3 sm:gap-4">
+              <div className="flex items-center gap-3">
+                <span className="inline-block rounded-full bg-ok-soft px-4 py-1 text-base font-bold text-ok sm:text-xl">
+                  모집중
+                </span>
                 {/* 자정 전후 서버·클라이언트 계산 차이 허용 */}
-                <span suppressHydrationWarning className="text-sm font-bold text-accent tabular-nums">
+                <span suppressHydrationWarning className="text-xl font-bold text-accent tabular-nums sm:text-2xl">
                   D-{dDay(t.recruitEnd)}
                 </span>
               </div>
-              <h2 className="line-clamp-2 text-xl leading-snug font-black text-balance sm:text-2xl">
+              <h2 className="line-clamp-2 text-3xl leading-snug font-black text-balance sm:text-5xl sm:leading-tight">
                 {t.title}
               </h2>
-              <p className="text-[15px] text-muted">
+              <p className="text-lg text-muted sm:text-2xl">
                 {t.institutionName} · {targetLabel[t.target]} · 만 {t.ageMin}~{t.ageMax}세 ·{" "}
                 {genderLabel[t.gender]}
               </p>
