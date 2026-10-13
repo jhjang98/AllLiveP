@@ -76,7 +76,7 @@ export function HeroCarousel({ slides }: { slides: AnnouncementView[] }) {
           <article
             key={t.id}
             aria-hidden={i !== index}
-            className="grid w-full flex-none gap-4 p-5 sm:grid-cols-[1fr_300px] sm:p-7"
+            className="grid w-full flex-none gap-4 p-5 pb-8 sm:grid-cols-[1fr_300px] sm:p-7"
           >
             <div className="grid content-center gap-3">
               <div className="flex items-center gap-2.5">
@@ -123,7 +123,7 @@ export function HeroCarousel({ slides }: { slides: AnnouncementView[] }) {
       </div>
 
       {slides.length > 1 && (
-        <div className="flex items-center justify-center gap-2 pb-3.5">
+        <div className="absolute right-0 bottom-2 left-0 flex items-center justify-center gap-2">
           <button
             aria-label="이전 공고"
             onClick={() => setIndex((index - 1 + slides.length) % slides.length)}
