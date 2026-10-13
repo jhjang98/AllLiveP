@@ -79,18 +79,18 @@ export function HeroCarousel({ slides }: { slides: AnnouncementView[] }) {
           >
             <div className="grid content-center gap-3 sm:gap-4">
               <div className="flex items-center gap-3">
-                <span className="inline-block rounded-full bg-ok-soft px-3.5 py-1 text-base font-bold text-ok">
+                <span className="inline-block rounded-full bg-ok-soft px-3 py-1 text-sm font-bold text-ok">
                   모집중
                 </span>
                 {/* 자정 전후 서버·클라이언트 계산 차이 허용 */}
-                <span suppressHydrationWarning className="text-lg font-bold text-accent tabular-nums sm:text-xl">
+                <span suppressHydrationWarning className="text-base font-bold text-accent tabular-nums">
                   D-{dDay(t.recruitEnd)}
                 </span>
               </div>
-              <h2 className="line-clamp-2 text-[28px] leading-snug font-black text-balance sm:text-[40px] sm:leading-tight">
+              <h2 className="line-clamp-2 text-2xl leading-snug font-black text-balance sm:text-[36px] sm:leading-tight">
                 {t.title}
               </h2>
-              <p className="text-base text-muted sm:text-xl">
+              <p className="text-[15px] text-muted sm:text-base">
                 {t.institutionName} · {targetLabel[t.target]} · 만 {t.ageMin}~{t.ageMax}세 ·{" "}
                 {genderLabel[t.gender]}
               </p>
