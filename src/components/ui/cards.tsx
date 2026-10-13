@@ -21,7 +21,7 @@ export function TrialCard({ trial }: { trial: AnnouncementView }) {
           <span className="text-sm font-bold text-accent tabular-nums">D-{dDay(trial.recruitEnd)}</span>
         )}
       </div>
-      <h3 className="text-[17px] leading-relaxed font-bold text-balance">{trial.title}</h3>
+      <h3 className="text-[19px] leading-relaxed font-bold text-balance">{trial.title}</h3>
       <div className="flex flex-wrap gap-x-3.5 gap-y-1 text-sm text-muted">
         <span>{trial.institutionName}</span>
         <span>{trial.institutionAddress}</span>
