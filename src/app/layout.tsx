@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <nav className="flex gap-4">
             <a href="/notice" className="hover:text-ink">공지사항</a>
             <a href="/faq" className="hover:text-ink">자주 묻는 질문</a>
-            <a href="/partner-intro" className="hover:text-ink">기관 입점 안내</a>
+            <a href="/partner-intro" className="hover:text-ink">기관 등록 안내</a>
           </nav>
           <span>AllLiveP · 임상시험 대상자 모집 플랫폼</span>
         </footer>

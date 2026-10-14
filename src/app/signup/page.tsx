@@ -120,7 +120,7 @@ function SignupForm() {
             담당자 계정을 먼저 만든 뒤 기관 정보를 제출합니다. 기관 계정으로는 임상시험 지원을 할 수
             없으니, 개인으로 지원하려면 다른 이메일로 일반회원 가입을 해 주세요.{" "}
             <Link href="/partner-intro" className="font-bold text-primary underline">
-              입점 안내 보기
+              등록 안내 보기
             </Link>
           </p>
         )}
