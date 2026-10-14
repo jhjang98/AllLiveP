@@ -42,6 +42,11 @@ export async function SiteHeader() {
               내 지원
             </Link>
           )}
+          {(!session || session.role === "member") && (
+            <Link href="/partner-intro" className="hover:text-ink">
+              기관 입점
+            </Link>
+          )}
           {session?.role === "institution" && (
             <Link href="/partner" className="font-bold text-primary-deep hover:underline">
               기관회원
@@ -54,7 +59,7 @@ export async function SiteHeader() {
           )}
           {session ? (
             <form action="/auth/signout" method="post" className="flex items-center gap-3">
-              <span className="max-w-40 truncate">{session.email}</span>
+              <span className="hidden max-w-40 truncate sm:inline">{session.email}</span>
               <button type="submit" className="font-bold text-primary hover:underline">
                 로그아웃
               </button>
