@@ -20,7 +20,8 @@ export async function SiteHeader() {
   const session = await getSession();
   return (
     <header className="border-b border-line bg-surface">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+      {/* 모바일: 메뉴가 넘치면 로고 아래 줄로 내려가고, 그래도 넘치면 가로 스크롤 */}
+      <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2">
         <Link href="/" className="flex items-center">
           {/* 4배율 에셋(478x160)을 재압축 없이 서빙 — 표시 높이 40px (원본: assets/brand/logo-original.png) */}
           <Image
@@ -33,9 +34,12 @@ export async function SiteHeader() {
             unoptimized
           />
         </Link>
-        <nav className="flex items-center gap-5 text-[15px] text-muted">
+        <nav className="flex max-w-full items-center gap-4 overflow-x-auto text-[15px] whitespace-nowrap text-muted sm:gap-5">
           <Link href="/trials" className="hover:text-ink">
             공고 찾기
+          </Link>
+          <Link href="/guide" className="hover:text-ink">
+            참여 절차
           </Link>
           {session?.role === "member" && (
             <Link href="/me/applications" className="hover:text-ink">
