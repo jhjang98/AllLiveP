@@ -21,8 +21,8 @@ export default async function TrialDetailPage({
   return (
     <div className="mx-auto grid max-w-3xl gap-4">
       <div>
-        <Badge tone={recruiting ? "open" : "closed"}>
-          {recruiting ? `모집중 · D-${dDay(trial.recruitEnd)}` : "마감"}
+        <Badge tone={recruiting ? "open" : "ended"}>
+          {recruiting ? `모집중 · D-${dDay(trial.recruitEnd)}` : "모집마감"}
         </Badge>
       </div>
       <h1 className="text-2xl leading-snug font-black text-balance">{trial.title}</h1>

@@ -4,7 +4,13 @@ import { isRecruiting, listAnnouncements } from "@/lib/announcements";
 import { HeroCarousel } from "./hero-carousel";
 
 export default async function HomePage() {
-  const recruiting = (await listAnnouncements()).filter(isRecruiting);
+  const all = await listAnnouncements();
+  const recruiting = all.filter(isRecruiting);
+  // 마감 공고: 최근 마감 순 6건까지 모집중 공고 뒤에 표시
+  const ended = all
+    .filter((t) => !isRecruiting(t))
+    .sort((a, b) => b.recruitEnd.localeCompare(a.recruitEnd))
+    .slice(0, 6);
   // 배너: 모집 종료 임박 순 상위 5건 (노출 등급 도입 전 기본 정렬)
   const bannerSlides = recruiting.slice(0, 5);
   return (
@@ -22,9 +28,9 @@ export default async function HomePage() {
       </section>
 
       <section className="grid gap-4">
-        <h2 className="text-lg font-bold text-muted">지금 모집 중</h2>
+        <h2 className="text-lg font-bold text-muted">실시간 모집 공고</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {recruiting.map((t) => (
+          {[...recruiting, ...ended].map((t) => (
             <TrialCard key={t.id} trial={t} />
           ))}
         </div>
