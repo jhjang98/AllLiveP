@@ -1,14 +1,26 @@
 "use client";
 
-// 회원가입 (이메일) — 본인확인(SMS)은 지원 시점에 별도 진행 (docs/domain/member.md: unverified→active)
+// 회원가입 (이메일) — 가입 유형 선택: 일반회원 / 병원·기관
+// 기관을 고르면 메일 인증 후 기관 신청 화면(/partner/signup)으로 바로 이어진다.
+// 본인확인(SMS)은 일반회원이 지원하는 시점에 별도 진행 (docs/domain/member.md)
 
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AgreeItem, FormField } from "@/components/ui/form";
 import { createClient } from "@/lib/supabase/client";
 
-export default function SignupPage() {
+type AccountType = "member" | "institution";
+
+const TYPES: Array<{ value: AccountType; title: string; desc: string }> = [
+  { value: "member", title: "일반회원", desc: "임상시험에 참여하고 싶어요" },
+  { value: "institution", title: "병원·기관", desc: "모집공고를 등록하고 싶어요" },
+];
+
+function SignupForm() {
+  const initialType: AccountType = useSearchParams().get("type") === "institution" ? "institution" : "member";
+  const [type, setType] = useState<AccountType>(initialType);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [agreeService, setAgreeService] = useState(false);
@@ -29,14 +41,31 @@ export default function SignupPage() {
     }
     setLoading(true);
     setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signUp({ email, password });
-    setLoading(false);
-    if (error) {
-      setError(error.message.includes("already") ? "이미 가입된 이메일입니다." : "가입에 실패했습니다. 잠시 후 다시 시도해 주세요.");
-      return;
+    try {
+      const next = type === "institution" ? "/partner/signup" : "/";
+      const supabase = createClient();
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+          data: { account_type: type },
+        },
+      });
+      if (error) {
+        setError(
+          error.message.includes("already")
+            ? "이미 가입된 이메일입니다."
+            : "가입에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        );
+        return;
+      }
+      setDone(true);
+    } catch {
+      setError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setLoading(false);
     }
-    setDone(true);
   }
 
   if (done) {
@@ -46,6 +75,12 @@ export default function SignupPage() {
         <p className="text-muted">
           {email} 으로 확인 메일을 보냈습니다. 메일의 링크를 눌러 가입을 완료해 주세요.
         </p>
+        {type === "institution" && (
+          <p className="rounded-(--radius-card) border border-line bg-surface px-4 py-3 text-[15px]">
+            메일 인증 후 <b>기관 정보와 사업자등록증을 제출하는 화면</b>으로 이동합니다. 관리자 승인이
+            끝나면 공고를 등록할 수 있습니다.
+          </p>
+        )}
         <Link href="/login" className="font-bold text-primary underline">
           로그인으로
         </Link>
@@ -56,7 +91,42 @@ export default function SignupPage() {
   return (
     <form onSubmit={onSubmit} className="mx-auto grid max-w-md gap-5 py-6">
       <h1 className="text-2xl font-black">회원가입</h1>
-      <FormField label="이메일" required>
+
+      <fieldset className="grid gap-2">
+        <legend className="mb-2 text-base font-bold">가입 유형</legend>
+        <div className="grid grid-cols-2 gap-2.5">
+          {TYPES.map((t) => (
+            <label
+              key={t.value}
+              className={`grid cursor-pointer gap-0.5 rounded-(--radius-card) border-[1.5px] px-4 py-3 transition ${
+                type === t.value ? "border-primary bg-primary-soft" : "border-line bg-surface hover:border-primary"
+              }`}
+            >
+              <input
+                type="radio"
+                name="account-type"
+                value={t.value}
+                checked={type === t.value}
+                onChange={() => setType(t.value)}
+                className="sr-only"
+              />
+              <span className={`text-base font-bold ${type === t.value ? "text-primary-deep" : ""}`}>{t.title}</span>
+              <span className="text-sm text-muted">{t.desc}</span>
+            </label>
+          ))}
+        </div>
+        {type === "institution" && (
+          <p className="text-sm text-muted">
+            담당자 계정을 먼저 만든 뒤 기관 정보를 제출합니다. 기관 계정으로는 임상시험 지원을 할 수
+            없으니, 개인으로 지원하려면 다른 이메일로 일반회원 가입을 해 주세요.{" "}
+            <Link href="/partner-intro" className="font-bold text-primary underline">
+              입점 안내 보기
+            </Link>
+          </p>
+        )}
+      </fieldset>
+
+      <FormField label={type === "institution" ? "담당자 이메일" : "이메일"} required>
         <input
           id="signup-email"
           type="email"
@@ -93,8 +163,22 @@ export default function SignupPage() {
         </p>
       )}
       <Button type="submit" full disabled={loading}>
-        {loading ? "처리 중..." : "가입하기"}
+        {loading ? "처리 중..." : type === "institution" ? "담당자 계정 만들기" : "가입하기"}
       </Button>
+      <p className="text-center text-[15px] text-muted">
+        이미 계정이 있나요?{" "}
+        <Link href="/login" className="font-bold text-primary underline">
+          로그인
+        </Link>
+      </p>
     </form>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
   );
 }
