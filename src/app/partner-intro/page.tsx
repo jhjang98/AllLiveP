@@ -1,10 +1,10 @@
-// PUB-13 기관 입점 안내 — 신청 절차·필요 서류·유의사항, 로그인 상태별 신청 버튼
+// PUB-13 기관 등록 안내 — 신청 절차·필요 서류·유의사항, 로그인 상태별 신청 버튼
 
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-export const metadata = { title: "기관 입점 안내" };
+export const metadata = { title: "기관 등록 안내" };
 
 const STEPS = [
   {
@@ -65,7 +65,7 @@ export default async function PartnerIntroPage() {
       </section>
 
       <section className="grid gap-4">
-        <h2 className="text-xl font-bold">입점 절차</h2>
+        <h2 className="text-xl font-bold">등록 절차</h2>
         <ol className="grid gap-3">
           {STEPS.map((s, i) => (
             <li key={s.title} className="flex gap-4 rounded-(--radius-card) border border-line bg-surface p-4">

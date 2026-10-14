@@ -103,7 +103,7 @@ function LoginForm() {
         <p>
           병원·기관이신가요?{" "}
           <Link href="/partner-intro" className="font-bold text-primary underline">
-            기관 입점 안내
+            기관 등록 안내
           </Link>
         </p>
       </div>

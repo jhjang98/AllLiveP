@@ -44,7 +44,7 @@ export async function SiteHeader() {
           )}
           {(!session || session.role === "member") && (
             <Link href="/partner-intro" className="hover:text-ink">
-              기관 입점
+              기관 등록
             </Link>
           )}
           {session?.role === "institution" && (
