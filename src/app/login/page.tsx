@@ -11,8 +11,11 @@ import { FormField } from "@/components/ui/form";
 import { safeNext } from "@/lib/nav";
 import { createClient } from "@/lib/supabase/client";
 
-const NOTICES: Record<string, { text: string; tone: "ok" | "err" }> = {
-  confirmed: { text: "이메일 인증이 확인되었습니다. 로그인해 주세요.", tone: "ok" },
+const NOTICES: Record<string, { text: string; tone: "info" | "err" }> = {
+  verify_check: {
+    text: "인증 링크를 처리하지 못했습니다. 이미 인증을 마쳤다면 로그인해 주세요. 로그인이 안 되면 가입할 때 쓴 브라우저에서 메일의 링크를 다시 열어 주세요.",
+    tone: "info",
+  },
   link_invalid: { text: "인증 링크가 만료되었거나 올바르지 않습니다. 다시 가입하거나 로그인해 주세요.", tone: "err" },
 };
 
@@ -59,7 +62,7 @@ function LoginForm() {
         <p
           role="status"
           className={`rounded-(--radius-card) border px-4 py-3 text-[15px] ${
-            notice.tone === "ok" ? "border-ok bg-ok-soft text-ok" : "border-err text-err"
+            notice.tone === "info" ? "border-line bg-surface text-ink" : "border-err text-err"
           }`}
         >
           {notice.text}

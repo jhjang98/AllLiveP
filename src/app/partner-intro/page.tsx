@@ -112,6 +112,7 @@ export default async function PartnerIntroPage() {
             <div className="flex flex-wrap justify-center gap-3">
               <ButtonLink href="/partner/signup">이 계정으로 기관 신청</ButtonLink>
               <form action="/auth/signout" method="post">
+                <input type="hidden" name="next" value="/signup?type=institution" />
                 <button type="submit" className="min-h-11 px-4 font-bold text-primary underline">
                   로그아웃 후 새로 가입
                 </button>
