@@ -13,10 +13,12 @@ export function TrialCard({ trial }: { trial: AnnouncementView }) {
   return (
     <Link
       href={`/trials/${trial.id}`}
-      className="grid gap-2 rounded-(--radius-card) border border-line bg-surface p-4 transition hover:border-primary"
+      className={`grid gap-2 rounded-(--radius-card) border border-line p-4 transition hover:border-primary ${
+        recruiting ? "bg-surface" : "bg-bg"
+      }`}
     >
       <div className="flex items-center justify-between gap-2">
-        <Badge tone={recruiting ? "open" : "closed"}>{recruiting ? "모집중" : "마감"}</Badge>
+        <Badge tone={recruiting ? "open" : "ended"}>{recruiting ? "모집중" : "모집마감"}</Badge>
         {recruiting && (
           <span className="text-sm font-bold text-accent tabular-nums">D-{dDay(trial.recruitEnd)}</span>
         )}
